@@ -1,16 +1,16 @@
 package entities
 
 type ResponseMessage struct {
-	Message string `json:"message" bson:"message,omitempty"`
+	Message string `json:"message"`
 }
 
 type ResponseModel struct {
-	Message string      `json:"message" bson:"message,omitempty"`
-	Data    interface{} `json:"data,omitempty" bson:"data,omitempty"`
-	Status  int         `json:"status,omitempty" bson:"status,omitempty"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data,omitempty"`
+	Status  int         `json:"status,omitempty"`
 }
 
 type ResponseBool struct {
-	Message string `json:"message" bson:"message,omitempty"`
-	IsTrue  bool   `json:"istrue,omitempty" bson:"istrue,omitempty"`
+	Message string `json:"message"`
+	IsTrue  bool   `json:"istrue,omitempty"`
 }

@@ -2,11 +2,11 @@ package main
 
 import (
 	"go-fiber-template/configuration"
-	ds "go-fiber-template/domain/datasources"
 	repo "go-fiber-template/domain/repositories"
 	gw "go-fiber-template/src/gateways"
 	"go-fiber-template/src/middlewares"
 	sv "go-fiber-template/src/services"
+	"go-fiber-template/supabase"
 	"log"
 	"os"
 
@@ -17,32 +17,35 @@ import (
 )
 
 func main() {
-
-	// // // remove this before deploy ###################
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-	// /// ############################################
 
 	app := fiber.New(configuration.NewFiberConfiguration())
+
 	middlewares.Logger(app)
 	app.Use(recover.New())
 	app.Use(cors.New())
 
-	mongodb := ds.NewMongoDB(10)
+	supabaseClient, err := supabase.NewClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	stockMovementsRepo := repo.NewStockMovementsRepository(supabaseClient)
+	stockMovementsService := sv.NewStockMovementsService(stockMovementsRepo)
+	productsRepo := repo.NewProductsRepository(supabaseClient)
+	productsService := sv.NewProductsService(productsRepo)
+	categoriesRepo := repo.NewCategoriesRepository(supabaseClient)
+	categoriesService := sv.NewCategoriesService(categoriesRepo)
 
-	userRepo := repo.NewUsersRepository(mongodb)
+	gw.NewHTTPGateway(app, stockMovementsService, productsService, categoriesService)
 
-	sv0 := sv.NewUsersService(userRepo)
-
-	gw.NewHTTPGateway(app, sv0)
-
-	PORT := os.Getenv("PORT")
-
-	if PORT == "" {
-		PORT = "8080"
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "1818"
 	}
 
-	app.Listen(":" + PORT)
+	log.Println("Server running on port", port)
+	log.Fatal(app.Listen(":" + port))
 }
